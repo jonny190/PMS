@@ -1,38 +1,37 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Build stage for frontend
+FROM node:18-alpine AS frontend-builder
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-# Copy backend
-COPY backend/package*.json ./backend/
-RUN cd backend && npm install --production=false
+COPY frontend/package*.json ./
+RUN npm install
 
-COPY backend/ ./backend/
-COPY frontend/ ./frontend/
+COPY frontend/ .
+RUN npm run build
 
-# Build frontend
-RUN cd frontend && npm install && npm run build
+# Build stage for backend
+FROM node:18-alpine AS backend-builder
+
+WORKDIR /app/backend
+
+COPY backend/package*.json ./
+RUN npm install
+
+COPY backend/ .
 
 # Production stage
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache postgresql-client
+# Copy backend
+COPY --from=backend-builder /app/backend /app/backend
 
-# Copy built artifacts
-COPY --from=builder /app/backend/ ./backend/
-COPY --from=builder /app/frontend/dist/ ./frontend/dist/
+# Copy frontend build
+COPY --from=frontend-builder /app/frontend/dist /app/backend/dist
 
-# Copy environment variables
-COPY backend/.env ./
+WORKDIR /app/backend
 
-# Install backend dependencies
-RUN cd backend && npm install --production=true
-
-# Expose port
 EXPOSE 5000
 
-# Start server
-CMD ["node", "backend/src/server.js"]
+CMD ["node", "src/server.js"]
