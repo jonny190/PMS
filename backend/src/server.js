@@ -15,14 +15,6 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-// Serve index.html for all frontend routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -30,6 +22,14 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api', routes);
+
+// Serve frontend static files (after API routes so /api/* is not shadowed)
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Serve index.html for all other routes (SPA fallback)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
