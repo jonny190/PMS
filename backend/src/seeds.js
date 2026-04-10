@@ -83,10 +83,15 @@ async function seed() {
     console.log('User: alice@example.com / password123');
   } catch (err) {
     console.error('Error seeding database:', err);
-    process.exit(1);
-  } finally {
-    process.exit(0);
+    throw err;
   }
 }
 
-seed();
+module.exports = { seed };
+
+// When run directly via `node src/seeds.js`, execute and exit.
+if (require.main === module) {
+  seed()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}

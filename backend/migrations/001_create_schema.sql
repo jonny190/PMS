@@ -94,32 +94,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply trigger to tables
+-- Apply trigger to tables (idempotent: drop first, then create)
+DROP TRIGGER IF EXISTS update_tenants_updated_at ON tenants;
 CREATE TRIGGER update_tenants_updated_at
   BEFORE UPDATE ON tenants
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON users
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_day_entries_updated_at ON day_entries;
 CREATE TRIGGER update_day_entries_updated_at
   BEFORE UPDATE ON day_entries
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_tasks_updated_at ON tasks;
 CREATE TRIGGER update_tasks_updated_at
   BEFORE UPDATE ON tasks
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_failure_reasons_updated_at ON failure_reasons;
 CREATE TRIGGER update_failure_reasons_updated_at
   BEFORE UPDATE ON failure_reasons
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_task_results_updated_at ON task_results;
 CREATE TRIGGER update_task_results_updated_at
   BEFORE UPDATE ON task_results
   FOR EACH ROW
